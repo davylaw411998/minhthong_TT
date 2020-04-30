@@ -3,6 +3,7 @@ const router = express.Router();
 
 var Pitch = require('../../models/pitch')
 
+// truy cap chi tiet san
 router.get('/list/:id', function (req, res, next) {
   let promise = Pitch.find({ _id: req.params._id }).exec()
 
@@ -15,6 +16,7 @@ router.get('/list/:id', function (req, res, next) {
   })
 })
 
+// tao san
 router.post('/create', function (req, res, next) {
   var pitch = new Pitch({
     name: req.body.name,
@@ -40,7 +42,7 @@ router.post('/create', function (req, res, next) {
     return res.status(501).json({ msg: "Error creating pitch" })
   })
 })
-
+//hien thi danh sach san cua chu san
 router.get('/list', function (req, res, next) {
   const resPerPage = parseInt(req.query.page_size)
   const page = req.query.page
@@ -77,7 +79,7 @@ router.get('/list', function (req, res, next) {
     })
   })
 })
-
+//update san
 router.post('/update/:id', function (req, res, next) {
   let promise = Pitch.updateOne({ _id: req.params.id }, req.body).exec()
   promise.then(function (doc) {

@@ -30,7 +30,7 @@ app.set('view engine', 'jade');
 app.use(favicon());
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
@@ -75,5 +75,11 @@ app.use(function (err, req, res, next) {
     });
 });
 
+const server = app.listen(3026, () => {
+    const host = server.address().address;
+    const { port } = server.address();
+    console.log(`This program is running at http ${host} ${port}`);
+  });
+  
 
 module.exports = app;

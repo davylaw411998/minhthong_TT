@@ -7,6 +7,7 @@ var router = express.Router();
 
 var User = require('../models/user')
 
+//dang ky
 router.post('/register', function (req, res, next) {
   User.findOne({ $or: [{ username: req.body.username, email: req.body.email }] })
     .then(doc => {
@@ -38,6 +39,7 @@ router.post('/register', function (req, res, next) {
     })
 })
 
+// dang nhap
 router.post('/login', function (req, res, next) {
   let promise = User.findOne({ $or: [{ email: req.body.user }, { username: req.body.user }] }).exec();
   promise.then(function (doc) {

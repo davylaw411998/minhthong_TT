@@ -4,6 +4,8 @@ const router = express.Router();
 var Pitch = require('../../models/pitch')
 
 //api danh cho khach hang
+
+//liet ke danh sach san
 router.get('/list', function (req, res, next) {
   const resPerPage = parseInt(req.query.page_size)
   const page = req.query.page
@@ -43,6 +45,7 @@ router.get('/list', function (req, res, next) {
     })
   })
 })
+//hien thi thong tin 1 san
 
 router.get('/list/:id', function (req, res, next) {
   let promise = Pitch.findOne({ _id: req.params.id }).exec()
