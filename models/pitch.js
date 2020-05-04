@@ -6,9 +6,6 @@ var schema = new Schema({
     type: String,
     require: true
   },
-  desc: {
-    type: String
-  },
   address: {
     type: String,
     require: true
@@ -38,12 +35,14 @@ var schema = new Schema({
     type: String
   },
   createdAt: {
-    type: Date,
+    type: Number,
+    default: Date.now(),
     required: true
   },
-  updatedAt: {
-    type: Date,
-    required: true
+  active:{
+    type: Boolean,
+    require: true,
+    default: true
   }
 })
 

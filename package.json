@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodejs ./bin/www"
+    "start": "nodemon app"
   },
   "author": "",
   "license": "ISC",
@@ -17,8 +17,10 @@
     "express-session": "^1.17.0",
     "jade": "^1.11.0",
     "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
     "mongoose": "^5.8.11",
     "morgan": "^1.9.1",
+    "nodemon": "^2.0.3",
     "static-favicon": "^2.0.0-alpha"
   }
 }

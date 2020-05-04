@@ -17,11 +17,12 @@ var schema = new Schema({
     required: true
   },
   createdAt: {
-    type: Date,
+    type: Number,
+    default: Date.now(),
     required: true
   },
   updatedAt: {
-    type: Date,
+    type: Number,
     required: true
   },
   first_name: {
