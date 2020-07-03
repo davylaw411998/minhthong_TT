@@ -25,20 +25,20 @@ var schema = new Schema({
     type: Number,
     required: true
   },
-  first_name: {
+  firstname: {
     type: String,
     require: true
   },
-  last_name: {
+  lastname: {
     type: String,
     require: true
   },
-  phone_number: {
+  phone: {
     type: String,
     require: true
   },
   permission : {
-    type: Number,   // 0:owner, 1:customer
+    type: String,   // 0:owner, 1:customer
     require :true
   }
 });

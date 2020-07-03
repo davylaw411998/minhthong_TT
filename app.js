@@ -22,7 +22,7 @@ mongoose.connect(
 
 var cors = require('cors');
 app.use(cors({
-    origin: 'http://localhost:4000'
+    origin: 'http://localhost:4200'
 }))
 
 

@@ -292,4 +292,16 @@ router.post('/edit/:id', function (req, res, next) {
   }
 })
 
+//check san da dat hay chua
+router.get('/check', function (req, res, next) {
+  let promise = bookpitch.find({ _id: req.query.id, time:req.query.time }).exec()
+
+  promise.then(function (doc) {
+    return res.status(200).json(doc)
+  })
+
+  promise.catch(function (err) {
+    return res.status(400).json({ msg: err })
+  })
+})
 module.exports = router

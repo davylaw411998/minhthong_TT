@@ -17,9 +17,9 @@ router.post('/register', function (req, res, next) {
           password: User.hashPassword(req.body.password),
           createdAt: Date.now(),
           updatedAt: Date.now(),
-          first_name: req.body.first_name,
-          last_name: req.body.last_name,
-          phone_number: req.body.phone_number,
+          firstname: req.body.firstname,
+          lastname: req.body.lastname,
+          phone: req.body.phone,
           permission: req.body.permission
         })
 
@@ -38,7 +38,7 @@ router.post('/register', function (req, res, next) {
 
 // dang nhap
 router.post('/login', function (req, res, next) {
-  let promise = User.findOne({ $or: [{ email: req.body.user }, { username: req.body.user }] }).exec();
+  let promise = User.findOne({ $or: [{ email: req.body.username }, { username: req.body.username }] }).exec();
   promise.then(function (doc) {
     if (doc) {
       console.log(doc.isValid(req.body.password))
@@ -104,8 +104,8 @@ router.post('/update/:id', function (req, res, next) {
   let promise = User.updateOne({ _id: req.params.id },
     {
       $set: {
-        first_name: req.body.first_name, last_name: req.body.last_name,
-        phone_number: req.body.phone_number, password: User.hashPassword(req.body.password),
+        firstname: req.body.firstname, lastname: req.body.lastname,
+        phone: req.body.phone, password: User.hashPassword(req.body.password),
         updatedAt: Date.now()
       }
     }).exec()
