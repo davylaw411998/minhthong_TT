@@ -2,9 +2,6 @@ var express = require('express');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
 
-var express = require('express');
-var router = express.Router();
-
 var User = require('../models/user')
 
 //dang ky
@@ -83,7 +80,7 @@ function verifyToken(req, res, next) {
 router.get('/logout', function (req, res, next) {
   req.session.destroy(function (err) {
     if (err) {
-      res.status(500).json({ msg: "Logout failed" })
+      res.status(400).json({ msg: "Logout failed" })
     } else {
       res.status(200).json({ msg: "Logout success" })
     }

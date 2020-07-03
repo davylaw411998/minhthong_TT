@@ -11,12 +11,17 @@ var schema = new Schema({
     default: Date.now(),
     require: true
   },
+  createdAt: {
+    type: Number,
+    default: Date.now(),
+    required: true
+  },
   subpitch_type: {
     type: Number,
     require: true
   }, // 1: san 5, 2: san 7, 3: ca 2 loai
   pitch_id: {
-    type: Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     require: true,
     ref: 'Pitch'
   },

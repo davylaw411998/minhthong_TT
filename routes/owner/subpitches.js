@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router();
 
 var Subpitch = require('../../models/subpitch')
+var Pitch = require('../../models/pitch')
 
 router.post('/create', function (req, res, next) {
   subpitch = new Subpitch({
@@ -18,11 +19,12 @@ router.post('/create', function (req, res, next) {
   let promise = subpitch.save();
 
   promise.then(function (doc) {
+    Pitch.updateOne({_id:req.body.pitch_id},{$push:{subpitch:doc._id}}).exec()
     res.status(200).json(doc)
   })
 
   promise.catch(function (err) {
-    res.status(500).json(err)
+    res.status(400).json(err)
   })
 })
 
@@ -34,7 +36,7 @@ router.get('/list/:id', function (req, res, next) {
   })
 
   promise.catch(function (err) {
-    res.status(500).json(err)
+    res.status(400).json(err)
   })
 })
 
@@ -46,7 +48,7 @@ router.post('/update/:id', function(req, res, next){
   })
 
   promise.catch(function (err) {
-    res.status(500).json(err)
+    res.status(400).json(err)
   })
 })
 
@@ -54,11 +56,12 @@ router.delete('/delete/:id',function(req, res, next){
   let promise = Subpitch.deleteOne({_id:req.params.id}).exec()
 
   promise.then(function (doc) {
+    Pitch.updateOne({_id:req.body.pitch_id},{$pull:{subpitch:doc._id}}).exec()
     res.status(200).json({msg:"Delete successfully"})
   })
 
   promise.catch(function (err) {
-    res.status(500).json(err)
+    res.status(400).json(err)
   })
 })
 

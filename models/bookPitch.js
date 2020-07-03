@@ -3,12 +3,12 @@ var Schema = mongoose.Schema;
 
 var schema = new Schema({
 	subpitch_id: {
-    type: Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     require: true,
     ref: 'Subpitch'
   },
   user_id: {
-    type: Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     require: true,
     ref: 'User'
   },

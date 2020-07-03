@@ -15,7 +15,7 @@ router.get('/find', async function (req, res, next) {
   const resPerPage = parseInt(req.query.page_size)
   const page = parseInt(req.query.page)
   var query
-  const name = new RegExp(req.query.search, "i")
+  const name = new RegExp(req.query.name, "i")
   const city = req.query.city
   const district = req.query.district
   const time = parseInt(req.query.time)
@@ -108,6 +108,71 @@ router.get('/find', async function (req, res, next) {
       res.status(200).json(result)
     }
   }
+})
+
+//tim tat ca san // batbuoc phai co city
+router.get('/list', function (req, res, next) {
+  const resPerPage = parseInt(req.query.page_size)
+  const page = parseInt(req.query.page)
+  var search = []
+  var query = null
+  if(req.query.name !== "" && req.query.name === undefined){
+    const name = new RegExp(req.query.name)
+    search.push({name: name})
+  }
+  const name = new RegExp(req.query.name)
+  if (req.query.district) {
+    search.push({ district: req.query.district })
+    //query = { $and: [{ name: name}, { district: req.query.district }] }
+  }
+  if(req.query.city) {
+    search.push({ city: req.query.city })
+// = { $and: [{ name: name},{city: req.query.city }] }
+  }
+
+  if(search.length){
+    query = {$and:query}
+  }else query = null
+  let promise = Pitch.find(query).exec()
+
+  promise.then(function (doc) {
+    const pages = Math.ceil(doc.length / resPerPage)
+    Pitch.find(query).sort({ name: 1 })
+      .skip((resPerPage * page) - resPerPage)
+      .limit(resPerPage)
+      .then(doc => {
+        const numOfPitchs = doc.length;
+        const foundPitchs = [];
+        if(doc && doc.length){
+          for (let i = 0; i < doc.length; i++) {
+            foundPitchs.push(doc[i])
+          }
+        }
+        res.status(200).json({
+          infoPitchs: foundPitchs,
+          currentPage: page,
+          pages: pages,
+          numOfResults: numOfPitchs
+        })
+      })
+
+    promise.catch(function (err) {
+      return res.status(400).json({ msg: err })
+    })
+  })
+})
+
+router.get('/list/:id', function (req, res, next) {
+
+  let promise = Pitch.findOne({ _id: req.params.id }).exec()
+
+  promise.then(function (doc) {
+    return res.status(200).json(doc)
+  })
+
+  promise.catch(function (err) {
+    return res.status(400).json({ msg: err })
+  })
 })
 
 // dat san

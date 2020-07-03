@@ -8,8 +8,11 @@ var session = require('express-session')
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var locations = require('./routes/location');
 var owner_pitches = require('./routes/owner/pitches')
 var customer_pitches = require('./routes/customer/pitches')
+var owner_subpitches = require('./routes/owner/subpitches')
+//var customer_subpitches = require('./routes/customer/subpitches')
 var app = express();
 
 var mongoose = require('mongoose');
@@ -40,9 +43,12 @@ app.use(session({
   }));
 
 app.use('/', routes);
+app.use('/', locations);
 app.use('/user', users);
 app.use('/pitch', customer_pitches);
+//app.use('/subpitch', customer_subpitches);
 app.use('/manager/pitch',owner_pitches)
+app.use('/manager/subpitch',owner_subpitches)
 
 /// catch 404 and forwarding to error handler
 app.use(function (req, res, next) {
@@ -51,10 +57,6 @@ app.use(function (req, res, next) {
     next(err);
 });
 
-/// error handlers
-
-// development error handler
-// will print stacktrace
 if (app.get('env') === 'development') {
     app.use(function (err, req, res, next) {
         res.status(err.status || 500);
@@ -65,8 +67,6 @@ if (app.get('env') === 'development') {
     });
 }
 
-// production error handler
-// no stacktraces leaked to user
 app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {

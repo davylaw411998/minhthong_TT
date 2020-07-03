@@ -5,7 +5,8 @@ var Pitch = require('../../models/pitch')
 
 // truy cap chi tiet san
 router.get('/list/:id', function (req, res, next) {
-  let promise = Pitch.find({ _id: req.params._id }).exec()
+  console.log(req.params.id)
+  let promise = Pitch.find({ _id: req.params.id }).exec()
 
   promise.then(function (doc) {
     return res.status(201).json(doc)
@@ -29,7 +30,8 @@ router.post('/create', function (req, res, next) {
     phone_number: req.body.phone_number,
     pitch_type: req.body.pitch_type,
     image_url: req.body.image_url,
-    owner_id: req.session.user_id
+    owner_id: req.session.user_id,
+    subpitch : []
   })
 
   let promise = pitch.save()
@@ -61,10 +63,7 @@ router.get('/list', function (req, res, next) {
         const numOfPitchs = doc.length;
         const foundPitchs = [];
         for (let i = 0; i < doc.length; i++) {
-          foundPitchs.push({
-            name: doc[i].name, phone: doc[i].phone, address: doc[i].address,
-            city: doc[i].city, district: doc[i].district
-          })
+          foundPitchs.push(doc[i])
         }
         res.status(200).json({
           infoPitchs: foundPitchs,
@@ -75,7 +74,7 @@ router.get('/list', function (req, res, next) {
       })
 
     promise.catch(function (err) {
-      return res.status(500).json({ msg: err })
+      return res.status(400).json({ msg: err })
     })
   })
 })

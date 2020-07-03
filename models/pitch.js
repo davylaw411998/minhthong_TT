@@ -11,11 +11,11 @@ var schema = new Schema({
     require: true
   },
   district: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     require: true
   },
   city: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     require: true
   },
   phone_number: {
@@ -27,7 +27,7 @@ var schema = new Schema({
     require: true
   }, // 1: san 5, 2: san 7 , 3: ca 2,
   owner_id: {
-    type: Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     require: true,
     ref: 'User'
   },
@@ -39,11 +39,17 @@ var schema = new Schema({
     default: Date.now(),
     required: true
   },
+  createdAt: {
+    type: Number,
+    default: Date.now(),
+    required: true
+  },
   active:{
     type: Boolean,
     require: true,
     default: true
-  }
+  },
+  subpitch:[{type:mongoose.Schema.Types.ObjectId}]
 })
 
 module.exports = mongoose.model('Pitch',schema)
