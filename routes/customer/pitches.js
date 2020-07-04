@@ -181,6 +181,7 @@ router.post('/bookPitch', function (req, res, next) {
   const userId = req.body.user_id
   const time = req.body.time
   const price = req.body.price
+  let promise
   if (!subpitchId || !userId || !time || !price) {
     return res.status(400).json({msg: "INVALID INFO"})
   } else {
@@ -191,14 +192,20 @@ router.post('/bookPitch', function (req, res, next) {
       price: req.body.price,
       createdAt: Date.now()
     })
-    let promise = bookpitch.save()
-  
-    promise.then(function (doc) {
-      return res.status(201).json({msg: 'SUCCESS'})
-    })
-  
-    promise.catch(function (err) {
-      return res.status(501).json({ msg: "ERROR" })
+
+    BookPitch.findOne({subpitch_id : req.body.subpitch_id, time :req.body.time}).then(doc=>{
+      if(doc){
+        return res.status(400).json({msg: 'Subpitck is exists'})
+      }else {
+        promise = bookpitch.save()
+        promise.then(function (doc) {
+          return res.status(201).json({msg: 'SUCCESS'})
+        })
+      
+        promise.catch(function (err) {
+          return res.status(501).json({ msg: "ERROR" })
+        })
+      }
     })
   }
 })
@@ -260,37 +267,37 @@ router.get('/history/:id', async function (req, res, next) {
 })
 
 // sua thong tin TK
-router.post('/edit/:id', function (req, res, next) {
-  const userId = req.params.id
-  if (!userId) {
-    return res.status(400).json({msg: "INVALID INFO"})
-  } else {
-    let newValue = {}
-    newValue.updatedAt = Date.now()
-    const password = req.body.password
-    const firstName = req.body.firstName
-    const lastName = req.body.lastName
-    const phone = req.body.phone
-    if (password) {
-      newValue.password = User.hashPassword(password)
-    }
-    if (firstName) {
-      newValue.first_name = firstName
-    }
-    if (lastName) {
-      newValue.last_name = lastName
-    }
-    if (phone) {
-      newValue.phone_number = phone
-    }
-    User.updateOne({_id: userId}, {$set: newValue})
-      .then(doc => {
-        res.status(200).json({msg: 'UPDATE SUCCESS'})
-      }).catch(function (err) {
-        res.status(400).json({ msg: "ERROR"});
-      })
-  }
-})
+// router.post('/edit/:id', function (req, res, next) {
+//   const userId = req.params.id
+//   if (!userId) {
+//     return res.status(400).json({msg: "INVALID INFO"})
+//   } else {
+//     let newValue = {}
+//     newValue.updatedAt = Date.now()
+//     const password = req.body.password
+//     const firstName = req.body.firstName
+//     const lastName = req.body.lastName
+//     const phone = req.body.phone
+//     if (password) {
+//       newValue.password = User.hashPassword(password)
+//     }
+//     if (firstName) {
+//       newValue.first_name = firstName
+//     }
+//     if (lastName) {
+//       newValue.last_name = lastName
+//     }
+//     if (phone) {
+//       newValue.phone_number = phone
+//     }
+//     User.updateOne({_id: userId}, {$set: newValue})
+//       .then(doc => {
+//         res.status(200).json({msg: 'UPDATE SUCCESS'})
+//       }).catch(function (err) {
+//         res.status(400).json({ msg: "ERROR"});
+//       })
+//   }
+// })
 
 //check san da dat hay chua
 router.get('/check', function (req, res, next) {

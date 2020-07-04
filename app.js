@@ -12,6 +12,7 @@ var locations = require('./routes/location');
 var owner_pitches = require('./routes/owner/pitches')
 var customer_pitches = require('./routes/customer/pitches')
 var owner_subpitches = require('./routes/owner/subpitches')
+var summary = require('./routes/summary_hourly/summaryBook_hourly_controller')
 //var customer_subpitches = require('./routes/customer/subpitches')
 var app = express();
 
@@ -44,6 +45,7 @@ app.use(session({
 
 app.use('/', routes);
 app.use('/', locations);
+app.use('/manager', summary)
 app.use('/user', users);
 app.use('/pitch', customer_pitches);
 //app.use('/subpitch', customer_subpitches);
