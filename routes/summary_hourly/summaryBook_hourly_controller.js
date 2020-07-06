@@ -2,7 +2,9 @@ var express = require('express');
 var router = express.Router();
 var _ = require('lodash');
 const BookPitch = require('../../models/bookPitch');
+const Pitch = require('../../models/pitch');
 const SummaryBookPitchDay = require('../../models/summary_hourly_bookPitch');
+var mongoose = require('mongoose')
 
 //const Tickets = require('../../model/ticket')
 const cronJob = require('cron').CronJob
@@ -97,48 +99,72 @@ job.start();
 router.get('/total', function (req, res, next) {
   var total = 0
   var date
-
+  var pitch_id = req.query.pitch_id
+  console.log(pitch_id)
   if (req.query.date !== undefined) {
     date = new Date(req.query.date)
   } else {
     date = new Date()
   }
-  SummaryBookPitchDay.aggregate([{
-    $match: {
-      $and: [
-        { day: date.getDate() },
-        { month: date.getMonth() + 1 },
-        { year: date.getFullYear() }
-      ]
-    }
-  },
-  {
-    $group: {
-      _id: {
-        day: "$day",
-        month: "$month",
-        year: "$year",
-      }, total: { $sum: "$total" },
-      users:{$addToSet:"$users"},
-      revenue:{
-        $sum:"$revenue"
-      }
-}
-  }])
-    .then(doc => {
-      var users = _.spread(_.union)(doc[0].users);
-      if (doc.length === 0) {
-        total = 0
-      } else total = doc[0].total
-
-      res.status(200).json({
-        total : total,
-        users: users,
-        revenue: doc[0].revenue
+  console.log(date)
+  var arrSubPitch = []
+  Pitch.findOne({_id:pitch_id}).then(data=>{
+    if(data && data.subpitch){
+      arrSubPitch = _.map(data.subpitch, (e) => {
+        return mongoose.Types.ObjectId(e)
       })
-    }).catch(function (err) {
-      res.status(400).json({ msg: "error", details: err });
-    })
+     // arrSubPitch = data.subpitch
+    }
+    console.log(arrSubPitch)
+    SummaryBookPitchDay.aggregate([{
+      $match: {
+        $and: [
+          { day: date.getDate() },
+          { month: date.getMonth() + 1 },
+          { year: date.getFullYear() },
+          { subpitch_id : { $in: arrSubPitch}}
+        ]
+      }
+    },
+    {
+      $group: {
+        _id: {
+          day: "$day",
+          month: "$month",
+          year: "$year",
+        }, total: { $sum: "$total" },
+        users:{$addToSet:"$users"},
+        revenue:{
+          $sum:"$revenue"
+        }
+  }
+    }])
+      .then(doc => {
+        console.log(doc)
+        var users = []
+        var revenue = 0
+        if(doc && doc.length){
+          users = _.spread(_.union)(doc[0].users);
+          revenue = doc[0].revenue
+        }else {
+          users = [];
+          revenue = 0
+        }
+        if (doc.length === 0) {
+          total = 0
+        } else total = doc[0].total
+  
+        res.status(200).json({
+          total : total,
+          users: users,
+          revenue: revenue
+        })
+      })
+      // .catch(function (err) {
+      //   res.status(400).json({ msg: "error", details: err });
+      // })
+  })
+  
 })
 
 //bieu do ticket theo ngay
@@ -149,68 +175,78 @@ router.get('/datachartbyday', function (req, res, next) {
   const distance = Math.ceil((endDate - startDate) / 24)
   var ArrFullDate = []
   var Arr = []
-
+  var pitch_id = req.query.pitch_id
   for (let i = 0; i < distance; i++) {
     var date = new Date(req.query.daystart)
     date.setDate(date.getDate() + i)
     var formatDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate()
     ArrFullDate.push(formatDate)
   }
-  console.log(startDate)
-  console.log(endDate)
-  SummaryBookPitchDay.aggregate([{
-    $match: {
-      fullDate: { $gte: startDate, $lte: endDate }
-    }
-  },
-  {
-    $group: {
-      _id: {
-        day: "$day",
-        month: "$month",
-        year: "$year",
-      },
-      total: {
-        $sum: "$total"
-      },
-      users:{$addToSet:"$users"},
-      revenue:{
-        $sum:"$revenue"
-      }
-    }
-  }]).then(function (doc) {
-    for (let i = 0; i < doc.length; i++) {
-      Arr.push({
-        date: doc[i]._id.year + "-" + doc[i]._id.month + "-" + doc[i]._id.day,
-        total: doc[i].total,
-        users:_.spread(_.union)(doc[i].users),
-        revenue:doc[i].revenue
+ 
+  Pitch.findOne({_id:pitch_id}).then(data=>{
+    if(data && data.subpitch){
+      arrSubPitch = _.map(data.subpitch, (e) => {
+        return mongoose.Types.ObjectId(e)
       })
     }
-    for (let i = 0; i < ArrFullDate.length; i++) {
-      var count = 0
-      for (let j = 0; j < Arr.length; j++) {
-        if (ArrFullDate[i] === Arr[j].date) {
-          count++
+    SummaryBookPitchDay.aggregate([{
+      $match: {
+        $and: [
+          {fullDate: { $gte: startDate, $lte: endDate }},
+          {subpitch_id : { $in: arrSubPitch}}
+        ]
+      }
+    },
+    {
+      $group: {
+        _id: {
+          day: "$day",
+          month: "$month",
+          year: "$year",
+        },
+        total: {
+          $sum: "$total"
+        },
+        users:{$addToSet:"$users"},
+        revenue:{
+          $sum:"$revenue"
         }
       }
-      if (count === 0) {
+    }]).then(function (doc) {
+      for (let i = 0; i < doc.length; i++) {
         Arr.push({
-          date: ArrFullDate[i],
-          total: 0,
-          users:[],
-          revenue:0
+          date: doc[i]._id.year + "-" + doc[i]._id.month + "-" + doc[i]._id.day,
+          total: doc[i].total,
+          users:_.spread(_.union)(doc[i].users),
+          revenue:doc[i].revenue
         })
       }
-    }
-
-    return res.status(200).json(Arr.sort(function (a, b) {
-      return new Date(a.date) - new Date(b.date)  //sap xep ngay tang dan
-    }))
-
-  }).catch(function (err) {
-    res.status(400).json({ msg: "error", details: err });
+      for (let i = 0; i < ArrFullDate.length; i++) {
+        var count = 0
+        for (let j = 0; j < Arr.length; j++) {
+          if (ArrFullDate[i] === Arr[j].date) {
+            count++
+          }
+        }
+        if (count === 0) {
+          Arr.push({
+            date: ArrFullDate[i],
+            total: 0,
+            users:[],
+            revenue:0
+          })
+        }
+      }
+  
+      return res.status(200).json(Arr.sort(function (a, b) {
+        return new Date(a.date) - new Date(b.date)  //sap xep ngay tang dan
+      }))
+  
+    }).catch(function (err) {
+      res.status(400).json({ msg: "error", details: err });
+    })
   })
+  
 })
 
 // //bieu do ticket theo gio
@@ -218,59 +254,68 @@ router.get('/datachartbyhour', function (req, res, next) {
 
   const startDate = +new Date(req.query.daystart + " 0:0:0") / 1000 / 60 / 60
   const endDate = +new Date(req.query.dayend + " 23:59:59") / 1000 / 60 / 60
-
-  SummaryBookPitchDay.aggregate([{
-    $match: {
-      fullDate: { $gte: startDate, $lte: endDate }
-    }
-  },
-  {
-    $group: {
-      _id: {
-        hour: "$hour",
-      },
-      total: {
-        $sum: "$total"
-      },
-      users:{$addToSet:"$users"},
-    }
-  }, { $sort: { _id: 1 } }
-  ]).then(function (doc) {
-
-    var fullHour = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
-    var Arr = []
-
-    for (let i = 0; i < doc.length; i++) {
-      Arr.push({
-        hour: doc[i]._id.hour,
-        total: doc[i].total,
-        users:_.spread(_.union)(doc[i].users),
-        revenue:doc[i].revenue
+  var pitch_id = req.query.pitch_id
+  Pitch.findOne({_id:pitch_id}).then(data=>{
+    if(data && data.subpitch){
+      arrSubPitch = _.map(data.subpitch, (e) => {
+        return mongoose.Types.ObjectId(e)
       })
     }
-
-    for (let i = 0; i < fullHour.length; i++) {
-      var count = 0
-      for (let j = 0; j < Arr.length; j++) {
-        if (fullHour[i] === Arr[j].hour) {
-          count++;
-        }
+    SummaryBookPitchDay.aggregate([{
+      $match: {
+        $and: [
+          {fullDate: { $gte: startDate, $lte: endDate }},
+          {subpitch_id : { $in: arrSubPitch}}
+        ]
       }
-      if (count === 0) {
+    },
+    {
+      $group: {
+        _id: {
+          hour: "$hour",
+        },
+        total: {
+          $sum: "$total"
+        },
+        users:{$addToSet:"$users"},
+      }
+    }, { $sort: { _id: 1 } }
+    ]).then(function (doc) {
+  
+      var fullHour = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+      var Arr = []
+  
+      for (let i = 0; i < doc.length; i++) {
         Arr.push({
-          hour: fullHour[i],
-          total: 0,
-          users:[],
-          revenue:0
+          hour: doc[i]._id.hour,
+          total: doc[i].total,
+          users:_.spread(_.union)(doc[i].users),
+          revenue:doc[i].revenue
         })
       }
-    }
-    return res.status(200).json(Arr.sort(compare))
-
-  }).catch(function (err) {
-    res.status(400).json({ msg: "error", details: err });
+  
+      for (let i = 0; i < fullHour.length; i++) {
+        var count = 0
+        for (let j = 0; j < Arr.length; j++) {
+          if (fullHour[i] === Arr[j].hour) {
+            count++;
+          }
+        }
+        if (count === 0) {
+          Arr.push({
+            hour: fullHour[i],
+            total: 0,
+            users:[],
+            revenue:0
+          })
+        }
+      }
+      return res.status(200).json(Arr.sort(compare))
+  
+    }).catch(function (err) {
+      res.status(400).json({ msg: "error", details: err });
+    })
   })
-
 })
 
 //sap xep gio

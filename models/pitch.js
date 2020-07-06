@@ -2,6 +2,10 @@ var mongoose = require('mongoose')
 var Schema = mongoose.Schema;
 
 var schema = new Schema({
+  _id:{
+    type: mongoose.Schema.Types.ObjectId,
+    require: true
+  },
   name: {
     type: String,
     require: true
@@ -22,10 +26,6 @@ var schema = new Schema({
     type: String,
     require: true
   },
-  pitch_type: {
-    type: Number,
-    require: true
-  }, // 1: san 5, 2: san 7 , 3: ca 2,
   owner_id: {
     type: mongoose.Schema.Types.ObjectId,
     require: true,
@@ -43,11 +43,6 @@ var schema = new Schema({
     type: Number,
     default: Date.now(),
     required: true
-  },
-  active:{
-    type: Boolean,
-    require: true,
-    default: true
   },
   subpitch:[{type:mongoose.Schema.Types.ObjectId}]
 })

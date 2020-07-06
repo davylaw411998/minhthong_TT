@@ -57,9 +57,13 @@ router.post('/login', function (req, res, next) {
 router.get('/getUser', verifyToken, function (req, res, next) {
   let promise = User.findOne({ username: decodedToken.username }).exec();
   promise.then(function (doc) {
+    var avatar = ""
+    if(doc && doc.avatar){
+       avatar = doc.avatar
+    }
     req.session.user_id = doc._id
     req.session.permission = doc.permission
-    res.status(200).json({ username: decodedToken.username, permission: doc.permission })
+    res.status(200).json({ username: decodedToken.username, permission: doc.permission, avatar: avatar})
   })
 })
 
@@ -88,8 +92,8 @@ router.get('/logout', function (req, res, next) {
   });
 })
 
-router.get('/:id', function (req, res, next) {
-  let promise = User.findOne({ _id: req.params.id }).exec();
+router.get('/getProfile', function (req, res, next) {
+  let promise = User.findOne({ _id: req.session.user_id }).exec();
 
   promise.then(function (doc) {
     return res.status(201).json(doc)

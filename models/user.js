@@ -38,7 +38,7 @@ var schema = new Schema({
     require: true
   },
   permission : {
-    type: String,   // 0:owner, 1:customer
+    type: String,   // owner, customer
     require :true
   }
 });

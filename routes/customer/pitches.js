@@ -25,7 +25,7 @@ router.get('/find', async function (req, res, next) {
     return res.status(400).json({msg: "INVALID INFO"})
   } else {
     if (district) {
-      query = { $and: [{ name: name}, { district: district }, { city: city }] }
+      query = { $and: [{ name: name}, { district: district }]}
     } else {
       query = { $and: [{ name: name}, { city: city }] }
     }

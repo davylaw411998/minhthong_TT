@@ -7,7 +7,6 @@ var Pitch = require('../../models/pitch')
 router.post('/create', function (req, res, next) {
   subpitch = new Subpitch({
     name: req.body.name,
-    desc: req.body.desc,
     createdAt: Date.now(),
     updatedAt: Date.now(),
     subpitch_type: req.body.subpitch_type,

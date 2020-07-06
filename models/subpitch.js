@@ -11,7 +11,7 @@ var schema = new Schema({
     default: Date.now(),
     require: true
   },
-  createdAt: {
+  updatedAt: {
     type: Number,
     default: Date.now(),
     required: true

@@ -28,10 +28,9 @@ router.post('/create', function (req, res, next) {
     district: req.body.district,
     city: req.body.city,
     phone_number: req.body.phone_number,
-    pitch_type: req.body.pitch_type,
     image_url: req.body.image_url,
     owner_id: req.session.user_id,
-    subpitch : []
+    subpitch : req.body.subpitchArr || []
   })
 
   let promise = pitch.save()
@@ -50,7 +49,7 @@ router.get('/list', function (req, res, next) {
   const page = req.query.page
   var query
 
-  query = { $and: [{ name: new RegExp(req.query.search) }, { owner_id: req.session.user_id }] }
+  query = { owner_id: req.session.user_id }
 
   let promise = Pitch.find(query).exec()
 
@@ -89,6 +88,5 @@ router.post('/update/:id', function (req, res, next) {
     return res.status(501).json({ msg: "Update pitch false" })
   })
 })
-
 
 module.exports = router;
