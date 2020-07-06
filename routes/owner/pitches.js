@@ -1,12 +1,16 @@
 const express = require('express')
 const router = express.Router();
 
-var Pitch = require('../../models/pitch')
+const Pitch = require('../../models/pitch')
+const BookPitch = require('../../models/bookPitch')
+const subPitch = require('../../models/subpitch')
+
+const _ = require('lodash')
 
 // truy cap chi tiet san
 router.get('/list/:id', function (req, res, next) {
   console.log(req.params.id)
-  let promise = Pitch.find({ _id: req.params.id }).exec()
+  let promise = Pitch.findOne({ _id: req.params.id }).exec()
 
   promise.then(function (doc) {
     return res.status(201).json(doc)
@@ -88,6 +92,63 @@ router.post('/update/:id', function (req, res, next) {
   promise.catch(function (err) {
     return res.status(501).json({ msg: "Update pitch false" })
   })
+})
+
+router.get('/history/:id', async function (req, res, next) {
+  const userId = req.params.id
+  if (!userId) {
+    return res.status(400).json({msg: "INVALID INFO"})
+  } else {
+    Pitch.find({owner_id: userId}).then(data => {
+      BookPitch.aggregate([
+        {
+          $match: {
+            user_id: ObjectId(userId)
+          }
+        },
+        {
+          $lookup:
+          {
+              from: "subpitches",
+              localField: "subpitch_id",
+              foreignField: "_id",
+              as: "subpitchDetail"
+          }
+        },
+        {
+          $unwind:"$subpitchDetail"
+        },
+        {
+          $lookup:
+          {
+              from: "pitches",
+              localField: "subpitchDetail.pitch_id",
+              foreignField: "_id",
+              as: "pitchDetail"
+          }
+        },
+        {
+          $unwind:"$pitchDetail"
+        },
+        {
+          $project:{
+            name: "$pitchDetail.name",
+            address:"$pitchDetail.address",
+            district:"$pitchDetail.district",
+            city:"$pitchDetail.city",
+            phone_number: "$pitchDetail.phone_number",
+            subpitch: "$subpitchDetail.name",
+            time: "$time",
+            bookedAt: "$createdAt"
+          }
+        }
+      ]).then(doc => {
+        return res.status(200).json(doc)
+      }).catch(function (err) {
+        return res.status(400).json({ msg: "error", details: err });
+      })
+    })
+  }
 })
 
 module.exports = router;

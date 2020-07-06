@@ -1,8 +1,9 @@
 const express = require('express')
 const router = express.Router();
 
-var Pitch = require('../../models/pitch')
-
+const Pitch = require('../../models/pitch')
+const BookPitch = require('../../models/bookPitch')
+const subPitch = require('../../models/subpitch')
 // truy cap chi tiet san
 router.get('/list/:id', function (req, res, next) {
   console.log(req.params.id)

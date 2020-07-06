@@ -114,27 +114,14 @@ router.get('/find', async function (req, res, next) {
 router.get('/list', function (req, res, next) {
   const resPerPage = parseInt(req.query.page_size)
   const page = parseInt(req.query.page)
-  var search = []
   var query = null
-  if(req.query.name !== "" && req.query.name === undefined){
-    const name = new RegExp(req.query.name)
-    search.push({name: name})
-  }
-  const name = new RegExp(req.query.name)
-  if (req.query.district) {
-    search.push({ district: req.query.district })
-    //query = { $and: [{ name: name}, { district: req.query.district }] }
-  }
-  if(req.query.city) {
-    search.push({ city: req.query.city })
-// = { $and: [{ name: name},{city: req.query.city }] }
-  }
+  console.log(req.query.name)
+  if(req.query.name !== "" && req.query.name !== undefined){
+    const name = new RegExp(req.query.name, "i")
+    query = { $and: [{ name: name}, { district: req.query.district }]}
+  }else query = {district: req.query.district}
 
-  if(search.length){
-    query = {$and:query}
-  }else query = null
   let promise = Pitch.find(query).exec()
-
   promise.then(function (doc) {
     const pages = Math.ceil(doc.length / resPerPage)
     Pitch.find(query).sort({ name: 1 })
