@@ -63,7 +63,9 @@ router.get('/getUser', verifyToken, function (req, res, next) {
     }
     req.session.user_id = doc._id
     req.session.permission = doc.permission
-    res.status(200).json({ username: decodedToken.username, permission: doc.permission, avatar: avatar})
+    req.session.save(function(err) {
+    })
+    res.status(200).json({ username: decodedToken.username, permission: doc.permission, user_id: doc._id, avatar: avatar})
   })
 })
 
@@ -93,7 +95,7 @@ router.get('/logout', function (req, res, next) {
 })
 
 router.get('/getProfile', function (req, res, next) {
-  let promise = User.findOne({ _id: req.session.user_id }).exec();
+  let promise = User.findOne({ _id: req.query.user_id }).exec();
 
   promise.then(function (doc) {
     return res.status(201).json(doc)

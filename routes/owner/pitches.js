@@ -19,6 +19,7 @@ router.get('/list/:id', function (req, res, next) {
 
 // tao san
 router.post('/create', function (req, res, next) {
+  console.log(req.body.user_id)
   var pitch = new Pitch({
     name: req.body.name,
     desc: req.body.desc,
@@ -27,10 +28,10 @@ router.post('/create', function (req, res, next) {
     updatedAt: Date.now(),
     district: req.body.district,
     city: req.body.city,
-    phone_number: req.body.phone_number,
+    phone_number: req.body.phone,
     image_url: req.body.image_url,
-    owner_id: req.session.user_id,
-    subpitch : req.body.subpitchArr || []
+    owner_id: req.body.user_id,
+    subpitch : []
   })
 
   let promise = pitch.save()
@@ -49,7 +50,7 @@ router.get('/list', function (req, res, next) {
   const page = req.query.page
   var query
 
-  query = { owner_id: req.session.user_id }
+  query = { owner_id: req.query.user_id }
 
   let promise = Pitch.find(query).exec()
 

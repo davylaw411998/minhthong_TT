@@ -2,10 +2,6 @@ var mongoose = require('mongoose')
 var Schema = mongoose.Schema;
 
 var schema = new Schema({
-  _id:{
-    type: mongoose.Schema.Types.ObjectId,
-    require: true
-  },
   name: {
     type: String,
     require: true
