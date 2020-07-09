@@ -57,7 +57,9 @@ router.delete('/delete/:id',function(req, res, next){
   Subpitch.findOne({_id : req.params.id}).then(doc => {
     let pitch_id = doc.pitch_id
     Subpitch.deleteOne({_id:req.params.id}).then(rs => {
-      Pitch.updateOne({_id:pitch_id},{$pull:{subpitch:req.params.id}}).exec()
+      Pitch.updateOne({_id:pitch_id},{$pull:{subpitch:req.params.id}}).then(kq => {
+        res.status(200).json({message:'Success'})
+      })
     }).catch(function (err) {
       res.status(400).json(err)
     })

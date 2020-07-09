@@ -19,11 +19,11 @@ const job = new cronJob('* * * * *', function (req, res) {
     var timestampsEnd = +new Date()
     
     BookPitch.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: timestampsStart, $lte: timestampsEnd }
-        }
-      },
+      // {
+      //   $match: {
+      //     createdAt: { $gte: timestampsStart, $lte: timestampsEnd }
+      //   }
+      // },
       {
         $project: {
           subpitch_id: "$subpitch_id",
@@ -92,9 +92,7 @@ const job = new cronJob('* * * * *', function (req, res) {
     })
 });
 job.start();
-  // if (isAvailableStartCron) {
-  //   job.start();
-  // }
+
 //total ticket trong 1 ngay
 router.get('/total', function (req, res, next) {
   var total = 0
@@ -106,7 +104,9 @@ router.get('/total', function (req, res, next) {
   } else {
     date = new Date()
   }
-  console.log(date)
+  console.log(date.getDate())
+  console.log(date.getMonth()+1)
+  console.log(date.getFullYear())
   var arrSubPitch = []
   Pitch.findOne({_id:pitch_id}).then(data=>{
     if(data && data.subpitch){
@@ -115,7 +115,6 @@ router.get('/total', function (req, res, next) {
       })
      // arrSubPitch = data.subpitch
     }
-    console.log(arrSubPitch)
     SummaryBookPitchDay.aggregate([{
       $match: {
         $and: [
@@ -138,8 +137,7 @@ router.get('/total', function (req, res, next) {
           $sum:"$revenue"
         }
   }
-    }])
-      .then(doc => {
+    }]).then(doc => {
         console.log(doc)
         var users = []
         var revenue = 0
@@ -160,10 +158,9 @@ router.get('/total', function (req, res, next) {
           revenue: revenue
         })
       })
-      // .catch(function (err) {
-      //   res.status(400).json({ msg: "error", details: err });
-      // })
-  })
+   }).catch(function (err) {
+      res.status(400).json({ msg: "error", details: err });
+   })
   
 })
 
@@ -213,6 +210,7 @@ router.get('/datachartbyday', function (req, res, next) {
         }
       }
     }]).then(function (doc) {
+      console.log(doc)
       for (let i = 0; i < doc.length; i++) {
         Arr.push({
           date: doc[i]._id.year + "-" + doc[i]._id.month + "-" + doc[i]._id.day,
@@ -278,6 +276,9 @@ router.get('/datachartbyhour', function (req, res, next) {
           $sum: "$total"
         },
         users:{$addToSet:"$users"},
+        revenue:{
+          $sum:"$revenue"
+        }
       }
     }, { $sort: { _id: 1 } }
     ]).then(function (doc) {

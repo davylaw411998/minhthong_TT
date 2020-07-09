@@ -19,9 +19,10 @@ var summary = require('./routes/summary_hourly/summaryBook_hourly_controller')
 var app = express();
 
 var mongoose = require('mongoose');
-mongoose.connect( 
-    'mongodb+srv://davylaw123:luisnani123@cluster0-eroju.mongodb.net/New_QLSB?retryWrites=true&w=majority',
-     {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true})
+// mongoose.connect( 
+//     'mongodb+srv://davylaw123:luisnani123@cluster0-eroju.mongodb.net/New_QLSB?retryWrites=true&w=majority',
+//      {useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true})
+mongoose.connect('mongodb://127.0.0.1/QLSB',{useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex:true})
 
 var cors = require('cors');
 app.use(cors({
@@ -37,6 +38,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser());
+app.use(express.static('public'))
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
     secret: 'mySecretKey',
@@ -45,7 +47,7 @@ app.use(session({
   }));
 var storage = multer.diskStorage({
 destination: function (req, file, cb) {
-    cb(null, 'uploads')
+    cb(null, 'public/uploads')
 },
 filename: function (req, file, cb) {
     cb(null, `${file.originalname}`)
@@ -58,6 +60,8 @@ app.post('/file',upload.single('file'),(req,res,next)=>{
         const err = new Error('Please upload image')
         return res.status(400).json(err)
     }
+    file.path = "http://localhost:3026/" + file.path.slice(7)
+    console.log(file)
     res.send(file)
 })
 app.use('/', routes);

@@ -11,10 +11,10 @@ const _ = require('lodash')
 
 // truy cap chi tiet san
 router.get('/list/:id', function (req, res, next) {
-  console.log(req.params.id)
   let promise = Pitch.findOne({ _id: req.params.id }).exec()
 
   promise.then(function (doc) {
+    console.log(doc)
     return res.status(201).json(doc)
   })
 
@@ -34,8 +34,8 @@ router.post('/create', function (req, res, next) {
     updatedAt: Date.now(),
     district: req.body.district,
     city: req.body.city,
-    phone_number: req.body.phone,
-    image_url: req.body.image_url,
+    phone_number: req.body.phone_number,
+    image: req.body.image,
     owner_id: req.body.user_id,
     subpitch : []
   })
@@ -126,7 +126,7 @@ router.get('/list', function (req, res, next) {
       }
     }
   ]).then(doc => {
-      console.log(doc)
+    //console.log(doc)
     var listpitch = []
     for(let i = 0 ; i < doc.length; i++){
       listpitch.push({_id:doc[i]._id._id, address:doc[i]._id.address, name:doc[i]._id.name,city:doc[i]._id.city,
@@ -138,7 +138,7 @@ router.get('/list', function (req, res, next) {
   })
 })
 //update san
-router.post('/update/:id', function (req, res, next) {
+router.put('/update/:id', function (req, res, next) {
   let promise = Pitch.updateOne({ _id: req.params.id }, req.body).exec()
   promise.then(function (doc) {
     return res.status(201).json(doc)
@@ -150,25 +150,41 @@ router.post('/update/:id', function (req, res, next) {
 })
 
 router.get('/history/:id', async function (req, res, next) {
+  console.log(req.query)
   const userId = req.params.id
   if (!userId) {
     return res.status(400).json({msg: "INVALID INFO"})
   } else {
     const arr = [];
-    Pitch.find({owner_id: userId}).then(data => {
+    var query = {owner_id: userId}
+
+    if(req.query.pitch_id !== "undefined"){
+      console.log(1)
+      query = {_id : ObjectId(req.query.pitch_id), owner_id: userId}
+    }   
+    Pitch.find(query).then(data => {
       _.forEach(data, e => {
+        console.log(e.subpitch)
         arr.push(e.subpitch)
       })
-      console.log(arr)
+      
       const arrySubpitch = Array.prototype.concat(...arr)
-      console.log(arrySubpitch)
       // arrySubpitch = _.forEach(arrySubpitch, e => {
       //   return ObjectId(arrySubpitch)
       // })
+      console.log(arrySubpitch)
+      var queryBook = [{subpitch_id: {$in : arrySubpitch}}]
+      if(req.query.daystart !== "undefined"){
+        queryBook.push({time:{$gte:+new Date(req.query.daystart)}})
+      }
+      if(req.query.dayend !== "undefined"){
+        queryBook.push({time:{$lt:+new Date(req.query.dayend)}})
+      }
+      console.log(queryBook)
       BookPitch.aggregate([
         {
           $match: {
-            subpitch_id: {$in : arrySubpitch}
+            $and : queryBook
           }
         }
         ,
@@ -227,6 +243,7 @@ router.get('/history/:id', async function (req, res, next) {
           }
         }
       ]).then(doc => {
+        //console.log(doc)
         return res.status(200).json(doc)
       }).catch(function (err) {
         return res.status(400).json({ msg: "error", details: err });

@@ -27,7 +27,7 @@ var schema = new Schema({
     require: true,
     ref: 'User'
   },
-  image_url: {
+  image: {
     type: String
   },
   createdAt: {
@@ -39,6 +39,9 @@ var schema = new Schema({
     type: Number,
     default: Date.now(),
     required: true
+  },
+  desc : {
+      type: String,
   },
   subpitch:[mongoose.Schema.Types.ObjectId]
 })

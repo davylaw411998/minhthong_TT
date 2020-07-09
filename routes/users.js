@@ -114,11 +114,13 @@ router.get('/getProfile', function (req, res, next) {
 })
 
 router.post('/update/:id', function (req, res, next) {
+  console.log(req.body.avatar)
   let promise = User.updateOne({ _id: req.params.id },
     {
       $set: {
         firstname: req.body.firstname, lastname: req.body.lastname,
         phone: req.body.phone, email:req.body.email,
+        avatar:req.body.avatar,
         updatedAt: Date.now()
       }
     }).exec()
