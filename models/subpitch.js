@@ -33,6 +33,26 @@ var schema = new Schema({
   time:{
     type: Schema.Types.Mixed,
     default: {
+      1: {
+        price: 0,
+        enable: false
+      },
+      2: {
+        price: 0,
+        enable: false
+      },
+      3: {
+        price: 0,
+        enable: false
+      },
+      4: {
+        price: 0,
+        enable: false
+      },
+      5: {
+        price: 0,
+        enable: false
+      },
       6: {
         price: 0,
         enable: false
@@ -100,7 +120,15 @@ var schema = new Schema({
       22: {
         price: 0,
         enable: false
-      }
+      },
+      23: {
+        price: 0,
+        enable: false
+      },
+      24: {
+        price: 0,
+        enable: false
+      },
     }
   }
 })

@@ -4,6 +4,8 @@ const router = express.Router();
 const Pitch = require('../../models/pitch')
 const BookPitch = require('../../models/bookPitch')
 const subPitch = require('../../models/subpitch')
+const mongoose = require('mongoose')
+const ObjectId = mongoose.Types.ObjectId;
 
 const _ = require('lodash')
 
@@ -50,36 +52,89 @@ router.post('/create', function (req, res, next) {
 })
 //hien thi danh sach san cua chu san
 router.get('/list', function (req, res, next) {
-  const resPerPage = parseInt(req.query.page_size)
-  const page = req.query.page
-  var query
-
-  query = { owner_id: req.query.user_id }
-
-  let promise = Pitch.find(query).exec()
-
-  promise.then(function (doc) {
-    const pages = Math.ceil(doc.length / resPerPage)
-    Pitch.find(query).sort({ name: 1 })
-      .skip((resPerPage * page) - resPerPage)
-      .limit(resPerPage)
-      .then(doc => {
-        const numOfPitchs = doc.length;
-        const foundPitchs = [];
-        for (let i = 0; i < doc.length; i++) {
-          foundPitchs.push(doc[i])
-        }
-        res.status(200).json({
-          infoPitchs: foundPitchs,
-          currentPage: page,
-          pages: pages,
-          numOfResults: numOfPitchs
-        })
-      })
-
-    promise.catch(function (err) {
-      return res.status(400).json({ msg: err })
-    })
+  Pitch.aggregate([
+    {
+      $match: {
+        owner_id:ObjectId(req.query.user_id )
+      }
+    }
+    ,
+    {
+      $unwind:{
+        "path": "$subpitch",
+        "preserveNullAndEmptyArrays": true
+      }
+    }
+    ,
+    {
+      $lookup:
+      {
+          from: "subpitches",
+          localField: "subpitch",
+          foreignField: "_id",
+          as: "subpitchDetail"
+      }
+    },
+    {
+      $lookup:
+      {
+          from: "districts",
+          localField: "district",
+          foreignField: "_id",
+          as: "district"
+      }
+    },
+    {
+      $unwind:"$district"
+    },
+    {
+      $lookup:
+      {
+          from: "cities",
+          localField: "city",
+          foreignField: "_id",
+          as: "city"
+      }
+    },
+    {
+      $unwind:"$city"
+    },
+    {
+      $project: {
+        _id: "$_id",
+        name:"$name",
+        subpitchDetail:"$subpitchDetail",
+        address:"$address",
+        city:"$city",
+        district:"$district",
+        phone_number:"$phone_number",
+        createdAt:"$createdAt"
+      }
+    },
+    {
+      $group:{
+        _id : {
+          _id:"$_id",
+          name:"$name",
+          address:"$address",
+          city:"$city",
+          district:"$district",
+          phone_number:"$phone_number",
+          createdAt:"$createdAt"
+        },
+        subpitch:{$addToSet:"$subpitchDetail"},
+      }
+    }
+  ]).then(doc => {
+      console.log(doc)
+    var listpitch = []
+    for(let i = 0 ; i < doc.length; i++){
+      listpitch.push({_id:doc[i]._id._id, address:doc[i]._id.address, name:doc[i]._id.name,city:doc[i]._id.city,
+      district:doc[i]._id.district,phone_number:doc[i]._id.phone_number,createdAt:doc[i]._id.createdAt,subpitchDetail:doc[i].subpitch})
+    }
+    res.status(200).json(listpitch)
+  }).catch(function (err) {
+    return res.status(400).json({ msg: "error", details: err });
   })
 })
 //update san
@@ -99,13 +154,24 @@ router.get('/history/:id', async function (req, res, next) {
   if (!userId) {
     return res.status(400).json({msg: "INVALID INFO"})
   } else {
+    const arr = [];
     Pitch.find({owner_id: userId}).then(data => {
+      _.forEach(data, e => {
+        arr.push(e.subpitch)
+      })
+      console.log(arr)
+      const arrySubpitch = Array.prototype.concat(...arr)
+      console.log(arrySubpitch)
+      // arrySubpitch = _.forEach(arrySubpitch, e => {
+      //   return ObjectId(arrySubpitch)
+      // })
       BookPitch.aggregate([
         {
           $match: {
-            user_id: ObjectId(userId)
+            subpitch_id: {$in : arrySubpitch}
           }
-        },
+        }
+        ,
         {
           $lookup:
           {
@@ -129,6 +195,19 @@ router.get('/history/:id', async function (req, res, next) {
         },
         {
           $unwind:"$pitchDetail"
+        }
+        ,
+        {
+          $lookup:
+          {
+              from: "users",
+              localField: "user_id",
+              foreignField: "_id",
+              as: "user"
+          }
+        },
+        {
+          $unwind:"$user"
         },
         {
           $project:{
@@ -139,7 +218,12 @@ router.get('/history/:id', async function (req, res, next) {
             phone_number: "$pitchDetail.phone_number",
             subpitch: "$subpitchDetail.name",
             time: "$time",
-            bookedAt: "$createdAt"
+            bookedAt: "$createdAt",
+            username : "$user.username",
+            firstname : "$user.firstname",
+            lastname : "$user.lastname",
+            phone : "$user.phone",
+            price:"$price"
           }
         }
       ]).then(doc => {

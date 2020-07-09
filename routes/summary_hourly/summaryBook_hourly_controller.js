@@ -19,11 +19,11 @@ const job = new cronJob('* * * * *', function (req, res) {
     var timestampsEnd = +new Date()
     
     BookPitch.aggregate([
-    //   {
-    //     $match: {
-    //       createdAt: { $gte: timestampsStart, $lte: timestampsEnd }
-    //     }
-    //   },
+      {
+        $match: {
+          createdAt: { $gte: timestampsStart, $lte: timestampsEnd }
+        }
+      },
       {
         $project: {
           subpitch_id: "$subpitch_id",
@@ -282,7 +282,7 @@ router.get('/datachartbyhour', function (req, res, next) {
     }, { $sort: { _id: 1 } }
     ]).then(function (doc) {
   
-      var fullHour = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+      var fullHour = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,0]
       var Arr = []
   
       for (let i = 0; i < doc.length; i++) {

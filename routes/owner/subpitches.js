@@ -28,7 +28,7 @@ router.post('/create', function (req, res, next) {
 })
 
 router.get('/list/:id', function (req, res, next) {
-  let promise = Subpitch.find({_id:req.params.id}).exec()
+  let promise = Subpitch.findOne({_id:req.params.id}).exec()
 
   promise.then(function (doc) {
     res.status(200).json(doc)
@@ -39,7 +39,9 @@ router.get('/list/:id', function (req, res, next) {
   })
 })
 
-router.post('/update/:id', function(req, res, next){
+router.put('/update/:id', function(req, res, next){
+  console.log(req.body)
+  console.log(req.params.id)
   let promise = Subpitch.updateOne({_id:req.params.id},req.body).exec()
 
   promise.then(function (doc) {
@@ -52,14 +54,14 @@ router.post('/update/:id', function(req, res, next){
 })
 
 router.delete('/delete/:id',function(req, res, next){
-  let promise = Subpitch.deleteOne({_id:req.params.id}).exec()
-
-  promise.then(function (doc) {
-    Pitch.updateOne({_id:req.body.pitch_id},{$pull:{subpitch:doc._id}}).exec()
-    res.status(200).json({msg:"Delete successfully"})
-  })
-
-  promise.catch(function (err) {
+  Subpitch.findOne({_id : req.params.id}).then(doc => {
+    let pitch_id = doc.pitch_id
+    Subpitch.deleteOne({_id:req.params.id}).then(rs => {
+      Pitch.updateOne({_id:pitch_id},{$pull:{subpitch:req.params.id}}).exec()
+    }).catch(function (err) {
+      res.status(400).json(err)
+    })
+  }).catch(function (err) {
     res.status(400).json(err)
   })
 })

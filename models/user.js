@@ -40,6 +40,10 @@ var schema = new Schema({
   permission : {
     type: String,   // owner, customer
     require :true
+  },
+  avatar : {
+    type: String
+    //require :true
   }
 });
 

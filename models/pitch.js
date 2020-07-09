@@ -40,7 +40,7 @@ var schema = new Schema({
     default: Date.now(),
     required: true
   },
-  subpitch:[{type:mongoose.Schema.Types.ObjectId}]
+  subpitch:[mongoose.Schema.Types.ObjectId]
 })
 
 module.exports = mongoose.model('Pitch',schema)

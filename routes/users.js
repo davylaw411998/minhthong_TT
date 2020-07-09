@@ -20,7 +20,8 @@ router.post('/register', function (req, res, next) {
           firstname: req.body.firstname,
           lastname: req.body.lastname,
           phone: req.body.phone,
-          permission: req.body.permission
+          permission: req.body.permission,
+          avatar:null
         })
 
         let promise = user.save();
@@ -98,7 +99,13 @@ router.get('/getProfile', function (req, res, next) {
   let promise = User.findOne({ _id: req.query.user_id }).exec();
 
   promise.then(function (doc) {
-    return res.status(201).json(doc)
+    return res.status(201).json({
+      firstname:doc.firstname,
+      lastname:doc.lastname,
+      phone:doc.phone,
+      email:doc.email,
+      avatar:doc.avatar
+    })
   })
 
   promise.catch(function (err) {
@@ -111,7 +118,7 @@ router.post('/update/:id', function (req, res, next) {
     {
       $set: {
         firstname: req.body.firstname, lastname: req.body.lastname,
-        phone: req.body.phone, password: User.hashPassword(req.body.password),
+        phone: req.body.phone, email:req.body.email,
         updatedAt: Date.now()
       }
     }).exec()

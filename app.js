@@ -5,6 +5,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session')
+var multer  = require('multer')
+var upload = multer({ dest: 'uploads/' })
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -41,7 +43,23 @@ app.use(session({
     resave: true,
     saveUninitialized: false
   }));
-
+var storage = multer.diskStorage({
+destination: function (req, file, cb) {
+    cb(null, 'uploads')
+},
+filename: function (req, file, cb) {
+    cb(null, `${file.originalname}`)
+    }
+})
+var upload = multer({ storage: storage })
+app.post('/file',upload.single('file'),(req,res,next)=>{
+    const file= req.file
+    if(!file){
+        const err = new Error('Please upload image')
+        return res.status(400).json(err)
+    }
+    res.send(file)
+})
 app.use('/', routes);
 app.use('/', locations);
 app.use('/manager', summary)
