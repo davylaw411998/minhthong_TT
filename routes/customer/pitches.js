@@ -50,11 +50,10 @@ router.get('/list', function (req, res, next) {
 })
 
 router.get('/list/:id', function (req, res, next) {
-
   Pitch.aggregate([
     {
       $match: {
-        _id:req.params.id
+        _id:ObjectId(req.params.id)
       }
     }
     ,
@@ -73,6 +72,9 @@ router.get('/list/:id', function (req, res, next) {
           foreignField: "_id",
           as: "subpitchDetail"
       }
+    },
+    {
+      $unwind:"$subpitchDetail"
     },
     {
       $lookup:
